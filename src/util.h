@@ -99,6 +99,9 @@ bool Truncate(const string& path, size_t size, string* err);
 #endif
 
 #ifdef _WIN32
+/// Encode UTF8 string to Wide string
+bool UTF8ToWide(string utf8, wstring &wide);
+
 /// Convert the value returned by GetLastError() into a string.
 string GetLastErrorString();
 

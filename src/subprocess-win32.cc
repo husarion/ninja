@@ -73,6 +73,11 @@ HANDLE Subprocess::SetupPipe(HANDLE ioport) {
 }
 
 bool Subprocess::Start(SubprocessSet* set, const string& command) {
+  wstring wideCommand;
+  if (!UTF8ToWide(command.c_str(), wideCommand)) {
+    Fatal("Subprocess::Start: Failed to encode command string to Wide string");
+  }
+
   HANDLE child_pipe = SetupPipe(set->ioport_);
 
   SECURITY_ATTRIBUTES security_attributes;
@@ -86,7 +91,7 @@ bool Subprocess::Start(SubprocessSet* set, const string& command) {
   if (nul == INVALID_HANDLE_VALUE)
     Fatal("couldn't open nul");
 
-  STARTUPINFOA startup_info;
+  STARTUPINFOW startup_info;
   memset(&startup_info, 0, sizeof(startup_info));
   startup_info.cb = sizeof(STARTUPINFO);
   if (!use_console_) {
@@ -106,7 +111,7 @@ bool Subprocess::Start(SubprocessSet* set, const string& command) {
 
   // Do not prepend 'cmd /c' on Windows, this breaks command
   // lines greater than 8,191 chars.
-  if (!CreateProcessA(NULL, (char*)command.c_str(), NULL, NULL,
+  if (!CreateProcessW(NULL, (LPWSTR)wideCommand.c_str(), NULL, NULL,
                       /* inherit handles */ TRUE, process_flags,
                       NULL, NULL,
                       &startup_info, &process_info)) {

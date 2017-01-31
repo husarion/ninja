@@ -90,6 +90,21 @@ void Error(const char* msg, ...) {
   fprintf(stderr, "\n");
 }
 
+#ifdef _WIN32
+bool UTF8ToWide(string utf8, wstring &wide) {
+  bool success = false;
+  const int wlength = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), int(utf8.size()), NULL, 0);
+  wchar_t* wdata = new wchar_t[wlength];
+  int r = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), int(utf8.size()), wdata, wlength);
+  if (r > 0) {
+    wide = wstring(wdata, wlength);
+    success = true;
+  }
+  delete[] wdata;
+  return success;
+}
+#endif
+
 bool CanonicalizePath(string* path, uint64_t* slash_bits, string* err) {
   METRIC_RECORD("canonicalize str");
   size_t len = path->size();
