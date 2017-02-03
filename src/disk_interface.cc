@@ -69,8 +69,13 @@ TimeStamp TimeStampFromFileTime(const FILETIME& filetime) {
 }
 
 TimeStamp StatSingleFile(const string& path, string* err) {
+  wstring widePath;
+  if (!UTF8ToWide(path.c_str(), widePath)) {
+    Fatal("cannot encode path");
+  }
+
   WIN32_FILE_ATTRIBUTE_DATA attrs;
-  if (!GetFileAttributesEx(path.c_str(), GetFileExInfoStandard, &attrs)) {
+  if (!GetFileAttributesExW((LPWSTR)widePath.c_str(), GetFileExInfoStandard, &attrs)) {
     DWORD win_err = GetLastError();
     if (win_err == ERROR_FILE_NOT_FOUND || win_err == ERROR_PATH_NOT_FOUND)
       return 0;
@@ -250,8 +255,10 @@ int RealDiskInterface::RemoveFile(const string& path) {
 
 void RealDiskInterface::AllowStatCache(bool allow) {
 #ifdef _WIN32
+#if 0
   use_cache_ = allow;
   if (!use_cache_)
     cache_.clear();
+#endif
 #endif
 }
